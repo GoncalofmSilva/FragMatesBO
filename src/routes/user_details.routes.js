@@ -4,6 +4,6 @@ import authorize from "../middlewares/auth.middleware.js"
 
 const userDetailsRouter = Router()
 
-userDetailsRouter.post('/users', authorize, listUsersFilter)
+userDetailsRouter.get('/users', authorize, listUsersFilter)
 
 export default userDetailsRouter
