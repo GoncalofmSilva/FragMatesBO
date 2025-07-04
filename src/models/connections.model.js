@@ -3,7 +3,7 @@ import pool from "../config/db";
 export const listConnections = async (connected_userId, userId) => {
     const query = `
         SELECT u.id, u.username
-        FROM conexoes c
+        FROM connections c
         JOIN users u ON 
         (u.id = c.user_id AND c.connected_user_id = ?) OR 
         (u.id = c.connected_user_id AND c.user_id = ?)
@@ -17,7 +17,7 @@ export const listConnections = async (connected_userId, userId) => {
 export const receivedConnections = async (connected_userId) => {
     const query = `
         SELECT u.id, u.username
-        FROM conexoes c
+        FROM connections c
         JOIN users u ON c.user_id = u.id
         WHERE c.connected_user_id = ? AND c.status = 'pending';
     `;
@@ -29,7 +29,7 @@ export const receivedConnections = async (connected_userId) => {
 export const sentConnections = async (connected_userId) => {
     const query = `
         SELECT u.id, u.username
-        FROM conexoes c
+        FROM connections c
         JOIN users u ON c.connected_user_id = u.id
         WHERE c.user_id = ? AND c.status = 'pending';
     `;
@@ -40,7 +40,7 @@ export const sentConnections = async (connected_userId) => {
 
 export const sendConnectionRequest = async (userId, connected_userId) => {
     const checkQuery = `
-    SELECT * FROM conexoes 
+    SELECT * FROM connections 
     WHERE (user_id = ? AND connected_user_id = ?) 
        OR (user_id = ? AND connected_user_id = ?)
   `;
@@ -55,7 +55,7 @@ export const sendConnectionRequest = async (userId, connected_userId) => {
     }
 
     const insertQuery = `
-    INSERT INTO conexoes (user_id, connected_user_id, status)
+    INSERT INTO connections (user_id, connected_user_id, status)
     VALUES (?, ?, 'pending');
   `;
 
@@ -66,7 +66,7 @@ export const sendConnectionRequest = async (userId, connected_userId) => {
 
 export const acceptConnectionRequest = async (userId, connected_userId) => {
     const query = `
-        UPDATE conexoes
+        UPDATE connections
         SET status = 'accepted'
         WHERE user_id = ? AND connected_user_id = ? AND status = 'pending';
     `;
@@ -77,7 +77,7 @@ export const acceptConnectionRequest = async (userId, connected_userId) => {
 
 export const rejectConnectionRequest = async (userId, connected_userId) => {
     const query = `
-        UPDATE conexoes
+        UPDATE connections
         SET status = 'rejected'
         WHERE user_id = ? AND connected_user_id = ? AND status = 'pending';
     `;
@@ -88,7 +88,7 @@ export const rejectConnectionRequest = async (userId, connected_userId) => {
 
 export const cancelConnectionRequest = async (userId, connected_userId) => {
   const query = `
-    DELETE FROM conexoes
+    DELETE FROM connections
     WHERE user_id = ? AND connected_user_id = ? AND status = 'pending';
   `;
 
@@ -98,7 +98,7 @@ export const cancelConnectionRequest = async (userId, connected_userId) => {
 
 export const deleteConnection = async (userId, connected_userId) => {
   const query = `
-    DELETE FROM conexoes
+    DELETE FROM connections
     WHERE ((user_id = ? AND connected_user_id = ?) OR (user_id = ? AND connected_user_id = ?))
       AND status = 'accepted';
   `;
