@@ -1,32 +1,47 @@
 //import jwt from "jsonwebtoken"
-import { listUsersPerFilter } from '../models/user_details.model.js'
+import { listUsersCS2, listUsersValorant, getUserDetailsById } from '../models/user_details.model.js'
 import dotenv from 'dotenv'
 dotenv.config();
 
-export const listUsersFilter = async (req, res, next) => {
+export const listUsersPerGame = async (req, res, next) => {
     try {
-        const { rankMin, rankMax, lvlMin, lvlMax, roles } = req.body
+        const { rankMin, rankMax, lvlMin, lvlMax, roles, game } = req.body
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(400).json({ error: "Token is required" });
         }
 
-        // Validate required parameters (optional, recommended)
-        if (
-            rankMin === undefined || rankMax === undefined ||
-            lvlMin === undefined || lvlMax === undefined ||
-            !Array.isArray(roles) || roles.length === 0
-        ) {
-            return res.status(400).json({ error: "Invalid or missing filter parameters" });
+        let filter;
+        switch (game) {
+            case 'CS2':
+                if (!Array.isArray(roles) || roles.length === 0) {
+                    filter = await listUsersCS2({ rankMin, rankMax, lvlMin, lvlMax, roles, game })
+                    res.status(200).json({ message: 'Filter applied', filter });
+                }
+                break;
+            case 'Valorant':
+                if (!Array.isArray(roles) || roles.length === 0) {
+                    filter = await listUsersValorant({ rankMin, rankMax, lvlMin, lvlMax, roles, game })
+                    res.status(200).json({ message: 'Filter applied', filter });
+                }
+                break;
+            default:
+                return res.status(400).json({ error: "Invalid game specified. Only CS2 and Valorant are supported." });
         }
+    } catch (error) {
+        next(error);
+    }
+}
 
-        //procurar pelo range
-        const filter = await listUsersPerFilter({rankMin, rankMax, lvlMin, lvlMax, roles})
-        if (!filter) {
-            return res.status(401).json({ error: "No users found for the given filters" });
+export const getSelectedUser = async (req, res, next) => {
+    const { userId } = req.params;
+
+    try {
+        const userDetails = await getUserDetailsById(userId);
+        if (!userDetails) {
+            return res.status(404).json({ error: "User not found" });
         }
-
-        res.status(200).json({ message: 'Filter applied', filter});
+        res.status(200).json(userDetails);
     } catch (error) {
         next(error);
     }
