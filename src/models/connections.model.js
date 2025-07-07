@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 
 export const listConnections = async (connected_userId, userId) => {
     const query = `
@@ -112,3 +112,53 @@ export const deleteConnection = async (userId, connected_userId) => {
 
   return result;
 };
+
+/*listconnections
+SELECT u.id, u.username
+FROM connections c
+JOIN users u ON 
+(u.id = c.user_id AND c.connected_user_id = 1) OR 
+(u.id = c.connected_user_id AND c.user_id = 2)
+WHERE c.status = 'accepted'; */
+
+/*receivedConnections
+SELECT u.id, u.username
+FROM connections c
+JOIN users u ON c.user_id = u.id
+WHERE c.connected_user_id = 1 AND c.status = 'pending';
+*/
+
+/*sentConnections
+SELECT u.id, u.username
+FROM connections c
+JOIN users u ON c.connected_user_id = u.id
+WHERE c.user_id = 1 AND c.status = 'pending';
+*/
+
+/*sendConnectionRequest
+INSERT INTO connections (user_id, connected_user_id, status)
+VALUES (1, 2, 'pending');
+*/
+
+/*acceptConnectionRequest
+UPDATE connections
+SET status = 'accepted'
+WHERE user_id = 2 AND connected_user_id = 1 AND status = 'pending';
+*/
+
+/*rejectConnectionRequest
+UPDATE connections
+SET status = 'rejected'
+WHERE user_id = 2 AND connected_user_id = 1 AND status = 'pending';
+*/
+
+/*cancelConnectionRequest
+DELETE FROM connections
+WHERE user_id = 1 AND connected_user_id = 2 AND status = 'pending';
+*/
+
+/*deleteConnection
+DELETE FROM connections
+WHERE ((user_id = 1 AND connected_user_id = 2) OR (user_id = 2 AND connected_user_id = 1))
+  AND status = 'accepted';
+*/

@@ -5,27 +5,27 @@ import authorize from "../middlewares/auth.middleware.js"
 const connectionsRouter = Router()
 
 // Route to list connections for a user
-connectionsRouter.get("/:userId/connections", authorize, listUserConnections);
+connectionsRouter.get("/connections/:userId", authorize, listUserConnections);
 
 // Route to list received connection requests
-connectionsRouter.get("/:userId/connections/received", authorize, listUserReceivedConnections);
+connectionsRouter.get("/connections/received/:userId", authorize, listUserReceivedConnections);
 
 // Route to list sent connection requests
-connectionsRouter.get("/:userId/connections/sent", authorize, listUserSentConnections);
+connectionsRouter.get("/connections/sent/:userId", authorize, listUserSentConnections);
 
 // Route to send a connection request
-connectionsRouter.post("/:userId/connections", authorize, sendConnection);
+connectionsRouter.post("/connections/:userId", authorize, sendConnection);
 
 // Route to accept a connection request
-connectionsRouter.put("/:userId/connections/accept", authorize, acceptConnection);
+connectionsRouter.put("/connections/accept/:userId", authorize, acceptConnection);
 
 // Route to reject a connection request
-connectionsRouter.put("/:userId/connections/reject", authorize, rejectConnection);
+connectionsRouter.put("/connections/reject/:userId", authorize, rejectConnection);
 
 // Route to cancel a connection request
-connectionsRouter.delete("/:userId/connections/cancel", authorize, cancelConnection);
+connectionsRouter.delete("/connections/cancel/:userId", authorize, cancelConnection);
 
 // Route to delete a connection
-connectionsRouter.delete("/:userId/connections", authorize, removeConnection);
+connectionsRouter.delete("/connections/:userId", authorize, removeConnection);
 
 export default connectionsRouter
