@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
+import { Resend } from "resend";
 import { register, findUserByEmail, makeTokenExpired, storeToken } from '../models/user.model.js'
 import dotenv from 'dotenv'
 dotenv.config();
@@ -73,7 +74,7 @@ export const login = async (req, res, next) => {
             return res.status(401).json({ error: "Invalid password" });
         }
 
-        
+
         // Step 4 - Generate JWT
         const token = jwt.sign(
             { id: user.id, email: user.email },
@@ -84,7 +85,7 @@ export const login = async (req, res, next) => {
         // Step 5 - Store token in DB
         await storeToken(email, token);
 
-        res.status(201).json({ message: 'Login successful', token});
+        res.status(201).json({ message: 'Login successful', token });
     } catch (error) {
         next(error)
     }
@@ -120,5 +121,60 @@ export const logout = async (req, res, next) => {
     } catch (error) {
         next(error)
 
+    }
+}
+
+export const recoverPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        // Step 1 - Validate presence
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        // Step 2 - Find user by email
+        const user = await findUserByEmail(email);
+        if (!user) {
+            return res.status(200).json({ message: "If this email exists, a recovery link has been sent." });
+        }
+
+         const resetToken = jwt.sign(
+            { id: user.id, email: user.email },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+        // Store the reset token and expiry in DB (implement this in your model)
+        await storeToken(email, resetToken);
+
+        const resetLink = `${process.env.FRAGMATES_FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+        const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+      <h2>Password Reset Request</h2>
+      <p>We received a request to reset your password. Click the button below to reset it:</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${resetLink}" style="background-color: #4a90e2; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px;">
+          Reset Password
+        </a>
+      </p>
+      <p>If you did not request this, you can ignore this email.</p>
+      <small>This link will expire in 1 hour.</small>
+    </div>
+  `;
+
+        // Step 3 - Send recovery email
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+            from: "FragMates <onboarding@fragmates.com>",
+            to: [email],
+            subject: "Password Recovery",
+            html: htmlContent,
+        });
+
+        res.status(200).json({ message: 'If the email exists, a recovery email has been sent.' });
+
+    } catch (error) {
+        next(error);
     }
 }
