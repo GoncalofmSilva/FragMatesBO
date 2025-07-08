@@ -10,6 +10,6 @@ authRouter.post('/login', login)
 
 authRouter.post('/logout', authorize, logout)
 
-authRouter.post('/recover', recoverPassword);
+authRouter.post('/recover-password', recoverPassword);
 
 export default authRouter
